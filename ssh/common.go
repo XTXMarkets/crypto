@@ -58,9 +58,9 @@ var serverForbiddenKexAlgos = map[string]struct{}{
 	kexAlgoDHGEXSHA256: {}, // server half implementation is only minimal to satisfy the automated tests
 }
 
-// preferredKexAlgos specifies the default preference for key-exchange algorithms
+// PreferredKexAlgos specifies the default preference for key-exchange algorithms
 // in preference order.
-var preferredKexAlgos = []string{
+var PreferredKexAlgos = []string{
 	kexAlgoCurve25519SHA256,
 	kexAlgoECDH256, kexAlgoECDH384, kexAlgoECDH521,
 	kexAlgoDH14SHA1,
@@ -255,7 +255,7 @@ func (c *Config) SetDefaults() {
 	c.Ciphers = ciphers
 
 	if c.KeyExchanges == nil {
-		c.KeyExchanges = preferredKexAlgos
+		c.KeyExchanges = PreferredKexAlgos
 	}
 
 	if c.MACs == nil {
