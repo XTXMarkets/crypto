@@ -65,6 +65,7 @@ var preferredKexAlgos = []string{
 	kexAlgoECDH256, kexAlgoECDH384, kexAlgoECDH521,
 	kexAlgoDH14SHA1,
 	kexAlgoDHGEXSHA256,
+	kexAlgoDH1SHA1,
 }
 
 // supportedHostKeyAlgos specifies the supported host-key algorithms (i.e. methods
