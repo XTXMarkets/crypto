@@ -35,8 +35,8 @@ var supportedCiphers = []string{
 	tripledescbcID,
 }
 
-// preferredCiphers specifies the default preference for ciphers.
-var preferredCiphers = []string{
+// PreferredCiphers specifies the default preference for ciphers.
+var PreferredCiphers = []string{
 	"aes128-gcm@openssh.com", gcm256CipherID,
 	chacha20Poly1305ID,
 	"aes128-ctr", "aes192-ctr", "aes256-ctr",
@@ -59,9 +59,9 @@ var serverForbiddenKexAlgos = map[string]struct{}{
 	kexAlgoDHGEXSHA256: {}, // server half implementation is only minimal to satisfy the automated tests
 }
 
-// preferredKexAlgos specifies the default preference for key-exchange algorithms
+// PreferredKexAlgos specifies the default preference for key-exchange algorithms
 // in preference order.
-var preferredKexAlgos = []string{
+var PreferredKexAlgos = []string{
 	kexAlgoCurve25519SHA256, kexAlgoCurve25519SHA256LibSSH,
 	kexAlgoECDH256, kexAlgoECDH384, kexAlgoECDH521,
 	kexAlgoDH14SHA256, kexAlgoDH14SHA1,
@@ -290,7 +290,7 @@ func (c *Config) SetDefaults() {
 		c.Rand = rand.Reader
 	}
 	if c.Ciphers == nil {
-		c.Ciphers = preferredCiphers
+		c.Ciphers = PreferredCiphers
 	}
 	var ciphers []string
 	for _, c := range c.Ciphers {
@@ -302,7 +302,7 @@ func (c *Config) SetDefaults() {
 	c.Ciphers = ciphers
 
 	if c.KeyExchanges == nil {
-		c.KeyExchanges = preferredKexAlgos
+		c.KeyExchanges = PreferredKexAlgos
 	}
 
 	if c.MACs == nil {
