@@ -22,7 +22,7 @@ func TestDefaultCiphersExist(t *testing.T) {
 			t.Errorf("supported cipher %q is unknown", cipherAlgo)
 		}
 	}
-	for _, cipherAlgo := range preferredCiphers {
+	for _, cipherAlgo := range PreferredCiphers {
 		if _, ok := cipherModes[cipherAlgo]; !ok {
 			t.Errorf("preferred cipher %q is unknown", cipherAlgo)
 		}
