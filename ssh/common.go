@@ -91,9 +91,9 @@ var (
 		KeyExchangeDH16SHA512,
 		KeyExchangeDHGEXSHA256,
 	}
-	// defaultKexAlgos specifies the default preference for key-exchange
+	// DefaultKexAlgos specifies the default preference for key-exchange
 	// algorithms in preference order.
-	defaultKexAlgos = []string{
+	DefaultKexAlgos = []string{
 		KeyExchangeCurve25519,
 		KeyExchangeECDHP256,
 		KeyExchangeECDHP384,
@@ -118,9 +118,9 @@ var (
 		CipherAES192CTR,
 		CipherAES256CTR,
 	}
-	// defaultCiphers specifies the default preference for ciphers algorithms
+	// DefaultCiphers specifies the default preference for ciphers algorithms
 	// in preference order.
-	defaultCiphers = supportedCiphers
+	DefaultCiphers = supportedCiphers
 	// insecureCiphers specifies cipher algorithms implemented by this
 	// package and which have security issues.
 	insecureCiphers = []string{
@@ -469,7 +469,7 @@ func (c *Config) SetDefaults() {
 		c.Rand = rand.Reader
 	}
 	if c.Ciphers == nil {
-		c.Ciphers = defaultCiphers
+		c.Ciphers = DefaultCiphers
 	}
 	var ciphers []string
 	for _, c := range c.Ciphers {
@@ -481,7 +481,7 @@ func (c *Config) SetDefaults() {
 	c.Ciphers = ciphers
 
 	if c.KeyExchanges == nil {
-		c.KeyExchanges = defaultKexAlgos
+		c.KeyExchanges = DefaultKexAlgos
 	}
 	var kexs []string
 	for _, k := range c.KeyExchanges {

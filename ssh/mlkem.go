@@ -26,7 +26,7 @@ func init() {
 		return
 	}
 	supportedKexAlgos = slices.Insert(supportedKexAlgos, 0, KeyExchangeMLKEM768X25519)
-	defaultKexAlgos = slices.Insert(defaultKexAlgos, 0, KeyExchangeMLKEM768X25519)
+	DefaultKexAlgos = slices.Insert(DefaultKexAlgos, 0, KeyExchangeMLKEM768X25519)
 	kexAlgoMap[KeyExchangeMLKEM768X25519] = &mlkem768WithCurve25519sha256{}
 }
 
