@@ -34,8 +34,8 @@ var supportedCiphers = []string{
 	tripledescbcID,
 }
 
-// preferredCiphers specifies the default preference for ciphers.
-var preferredCiphers = []string{
+// PreferredCiphers specifies the default preference for ciphers.
+var PreferredCiphers = []string{
 	"aes128-gcm@openssh.com",
 	chacha20Poly1305ID,
 	"aes128-ctr", "aes192-ctr", "aes256-ctr",
@@ -243,7 +243,7 @@ func (c *Config) SetDefaults() {
 		c.Rand = rand.Reader
 	}
 	if c.Ciphers == nil {
-		c.Ciphers = preferredCiphers
+		c.Ciphers = PreferredCiphers
 	}
 	var ciphers []string
 	for _, c := range c.Ciphers {
