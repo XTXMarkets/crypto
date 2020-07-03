@@ -20,18 +20,20 @@ import (
 )
 
 const (
-	kexAlgoDH1SHA1          = "diffie-hellman-group1-sha1"
-	kexAlgoDH14SHA1         = "diffie-hellman-group14-sha1"
-	kexAlgoECDH256          = "ecdh-sha2-nistp256"
-	kexAlgoECDH384          = "ecdh-sha2-nistp384"
-	kexAlgoECDH521          = "ecdh-sha2-nistp521"
-	kexAlgoCurve25519SHA256 = "curve25519-sha256@libssh.org"
+	KexAlgoDH1SHA1          = "diffie-hellman-group1-sha1"
+	KexAlgoDH14SHA1         = "diffie-hellman-group14-sha1"
+	KexAlgoDH1SHA256        = "diffie-hellman-group1-sha256"
+	KexAlgoDH14SHA256       = "diffie-hellman-group14-sha256"
+	KexAlgoECDH256          = "ecdh-sha2-nistp256"
+	KexAlgoECDH384          = "ecdh-sha2-nistp384"
+	KexAlgoECDH521          = "ecdh-sha2-nistp521"
+	KexAlgoCurve25519SHA256 = "curve25519-sha256@libssh.org"
 
 	// For the following kex only the client half contains a production
 	// ready implementation. The server half only consists of a minimal
 	// implementation to satisfy the automated tests.
-	kexAlgoDHGEXSHA1   = "diffie-hellman-group-exchange-sha1"
-	kexAlgoDHGEXSHA256 = "diffie-hellman-group-exchange-sha256"
+	KexAlgoDHGEXSHA1   = "diffie-hellman-group-exchange-sha1"
+	KexAlgoDHGEXSHA256 = "diffie-hellman-group-exchange-sha256"
 )
 
 // kexResult captures the outcome of a key exchange.
@@ -86,6 +88,7 @@ type kexAlgorithm interface {
 // dhGroup is a multiplicative group suitable for implementing Diffie-Hellman key agreement.
 type dhGroup struct {
 	g, p, pMinus1 *big.Int
+	hashFunc      crypto.Hash
 }
 
 func (group *dhGroup) diffieHellman(theirPublic, myPrivate *big.Int) (*big.Int, error) {
@@ -96,8 +99,6 @@ func (group *dhGroup) diffieHellman(theirPublic, myPrivate *big.Int) (*big.Int, 
 }
 
 func (group *dhGroup) Client(c packetConn, randSource io.Reader, magics *handshakeMagics) (*kexResult, error) {
-	hashFunc := crypto.SHA1
-
 	var x *big.Int
 	for {
 		var err error
@@ -132,7 +133,7 @@ func (group *dhGroup) Client(c packetConn, randSource io.Reader, magics *handsha
 		return nil, err
 	}
 
-	h := hashFunc.New()
+	h := group.hashFunc.New()
 	magics.write(h)
 	writeString(h, kexDHReply.HostKey)
 	writeInt(h, X)
@@ -146,12 +147,11 @@ func (group *dhGroup) Client(c packetConn, randSource io.Reader, magics *handsha
 		K:         K,
 		HostKey:   kexDHReply.HostKey,
 		Signature: kexDHReply.Signature,
-		Hash:      crypto.SHA1,
+		Hash:      group.hashFunc,
 	}, nil
 }
 
 func (group *dhGroup) Server(c packetConn, randSource io.Reader, magics *handshakeMagics, priv Signer) (result *kexResult, err error) {
-	hashFunc := crypto.SHA1
 	packet, err := c.readPacket()
 	if err != nil {
 		return
@@ -179,7 +179,7 @@ func (group *dhGroup) Server(c packetConn, randSource io.Reader, magics *handsha
 
 	hostKeyBytes := priv.PublicKey().Marshal()
 
-	h := hashFunc.New()
+	h := group.hashFunc.New()
 	magics.write(h)
 	writeString(h, hostKeyBytes)
 	writeInt(h, kexDHInit.X)
@@ -211,8 +211,8 @@ func (group *dhGroup) Server(c packetConn, randSource io.Reader, magics *handsha
 		K:         K,
 		HostKey:   hostKeyBytes,
 		Signature: sig,
-		Hash:      crypto.SHA1,
-	}, err
+		Hash:      group.hashFunc,
+	}, nil
 }
 
 // ecdh performs Elliptic Curve Diffie-Hellman key exchange as
@@ -390,28 +390,43 @@ func init() {
 	// This is the group called diffie-hellman-group1-sha1 in RFC
 	// 4253 and Oakley Group 2 in RFC 2409.
 	p, _ := new(big.Int).SetString("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE65381FFFFFFFFFFFFFFFF", 16)
-	kexAlgoMap[kexAlgoDH1SHA1] = &dhGroup{
-		g:       new(big.Int).SetInt64(2),
-		p:       p,
-		pMinus1: new(big.Int).Sub(p, bigOne),
+	kexAlgoMap[KexAlgoDH1SHA1] = &dhGroup{
+		g:        new(big.Int).SetInt64(2),
+		p:        p,
+		pMinus1:  new(big.Int).Sub(p, bigOne),
+		hashFunc: crypto.SHA1,
+	}
+	kexAlgoMap[KexAlgoDH1SHA256] = &dhGroup{
+		g:        new(big.Int).SetInt64(2),
+		p:        p,
+		pMinus1:  new(big.Int).Sub(p, bigOne),
+		hashFunc: crypto.SHA256,
 	}
 
 	// This is the group called diffie-hellman-group14-sha1 in RFC
 	// 4253 and Oakley Group 14 in RFC 3526.
 	p, _ = new(big.Int).SetString("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE45B3DC2007CB8A163BF0598DA48361C55D39A69163FA8FD24CF5F83655D23DCA3AD961C62F356208552BB9ED529077096966D670C354E4ABC9804F1746C08CA18217C32905E462E36CE3BE39E772C180E86039B2783A2EC07A28FB5C55DF06F4C52C9DE2BCBF6955817183995497CEA956AE515D2261898FA051015728E5A8AACAA68FFFFFFFFFFFFFFFF", 16)
 
-	kexAlgoMap[kexAlgoDH14SHA1] = &dhGroup{
-		g:       new(big.Int).SetInt64(2),
-		p:       p,
-		pMinus1: new(big.Int).Sub(p, bigOne),
+	kexAlgoMap[KexAlgoDH14SHA1] = &dhGroup{
+		g:        new(big.Int).SetInt64(2),
+		p:        p,
+		pMinus1:  new(big.Int).Sub(p, bigOne),
+		hashFunc: crypto.SHA1,
 	}
 
-	kexAlgoMap[kexAlgoECDH521] = &ecdh{elliptic.P521()}
-	kexAlgoMap[kexAlgoECDH384] = &ecdh{elliptic.P384()}
-	kexAlgoMap[kexAlgoECDH256] = &ecdh{elliptic.P256()}
-	kexAlgoMap[kexAlgoCurve25519SHA256] = &curve25519sha256{}
-	kexAlgoMap[kexAlgoDHGEXSHA1] = &dhGEXSHA{hashFunc: crypto.SHA1}
-	kexAlgoMap[kexAlgoDHGEXSHA256] = &dhGEXSHA{hashFunc: crypto.SHA256}
+	kexAlgoMap[KexAlgoDH14SHA256] = &dhGroup{
+		g:        new(big.Int).SetInt64(2),
+		p:        p,
+		pMinus1:  new(big.Int).Sub(p, bigOne),
+		hashFunc: crypto.SHA256,
+	}
+
+	kexAlgoMap[KexAlgoECDH521] = &ecdh{elliptic.P521()}
+	kexAlgoMap[KexAlgoECDH384] = &ecdh{elliptic.P384()}
+	kexAlgoMap[KexAlgoECDH256] = &ecdh{elliptic.P256()}
+	kexAlgoMap[KexAlgoCurve25519SHA256] = &curve25519sha256{}
+	kexAlgoMap[KexAlgoDHGEXSHA1] = &dhGEXSHA{hashFunc: crypto.SHA1}
+	kexAlgoMap[KexAlgoDHGEXSHA256] = &dhGEXSHA{hashFunc: crypto.SHA256}
 }
 
 // curve25519sha256 implements the curve25519-sha256@libssh.org key

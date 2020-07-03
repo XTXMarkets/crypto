@@ -44,27 +44,27 @@ var PreferredCiphers = []string{
 // supportedKexAlgos specifies the supported key-exchange algorithms in
 // preference order.
 var supportedKexAlgos = []string{
-	kexAlgoCurve25519SHA256,
+	KexAlgoCurve25519SHA256,
 	// P384 and P521 are not constant-time yet, but since we don't
 	// reuse ephemeral keys, using them for ECDH should be OK.
-	kexAlgoECDH256, kexAlgoECDH384, kexAlgoECDH521,
-	kexAlgoDH14SHA1, kexAlgoDH1SHA1,
+	KexAlgoECDH256, KexAlgoECDH384, KexAlgoECDH521,
+	KexAlgoDH14SHA1, KexAlgoDH1SHA1,
 }
 
 // serverForbiddenKexAlgos contains key exchange algorithms, that are forbidden
 // for the server half.
 var serverForbiddenKexAlgos = map[string]struct{}{
-	kexAlgoDHGEXSHA1:   {}, // server half implementation is only minimal to satisfy the automated tests
-	kexAlgoDHGEXSHA256: {}, // server half implementation is only minimal to satisfy the automated tests
+	KexAlgoDHGEXSHA1:   {}, // server half implementation is only minimal to satisfy the automated tests
+	KexAlgoDHGEXSHA256: {}, // server half implementation is only minimal to satisfy the automated tests
 }
 
 // PreferredKexAlgos specifies the default preference for key-exchange algorithms
 // in preference order.
 var PreferredKexAlgos = []string{
-	kexAlgoCurve25519SHA256,
-	kexAlgoECDH256, kexAlgoECDH384, kexAlgoECDH521,
-	kexAlgoDH14SHA1,
-	kexAlgoDHGEXSHA256,
+	KexAlgoCurve25519SHA256,
+	KexAlgoECDH256, KexAlgoECDH384, KexAlgoECDH521,
+	KexAlgoDH14SHA256,
+	KexAlgoDH14SHA1,
 }
 
 // supportedHostKeyAlgos specifies the supported host-key algorithms (i.e. methods
