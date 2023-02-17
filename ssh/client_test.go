@@ -292,7 +292,7 @@ func TestUnsupportedAlgorithm(t *testing.T) {
 		{
 			"unsupported and supported KEXs",
 			Config{
-				KeyExchanges: []string{"unsupported", kexAlgoCurve25519SHA256},
+				KeyExchanges: []string{"unsupported", KexAlgoCurve25519SHA256},
 			},
 			"",
 		},
