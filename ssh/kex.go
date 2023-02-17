@@ -20,20 +20,20 @@ import (
 )
 
 const (
-	kexAlgoDH1SHA1                = "diffie-hellman-group1-sha1"
-	kexAlgoDH14SHA1               = "diffie-hellman-group14-sha1"
-	kexAlgoDH14SHA256             = "diffie-hellman-group14-sha256"
-	kexAlgoECDH256                = "ecdh-sha2-nistp256"
-	kexAlgoECDH384                = "ecdh-sha2-nistp384"
-	kexAlgoECDH521                = "ecdh-sha2-nistp521"
-	kexAlgoCurve25519SHA256LibSSH = "curve25519-sha256@libssh.org"
-	kexAlgoCurve25519SHA256       = "curve25519-sha256"
+	KexAlgoDH1SHA1                = "diffie-hellman-group1-sha1"
+	KexAlgoDH14SHA1               = "diffie-hellman-group14-sha1"
+	KexAlgoDH14SHA256             = "diffie-hellman-group14-sha256"
+	KexAlgoECDH256                = "ecdh-sha2-nistp256"
+	KexAlgoECDH384                = "ecdh-sha2-nistp384"
+	KexAlgoECDH521                = "ecdh-sha2-nistp521"
+	KexAlgoCurve25519SHA256LibSSH = "curve25519-sha256@libssh.org"
+	KexAlgoCurve25519SHA256       = "curve25519-sha256"
 
 	// For the following kex only the client half contains a production
 	// ready implementation. The server half only consists of a minimal
 	// implementation to satisfy the automated tests.
-	kexAlgoDHGEXSHA1   = "diffie-hellman-group-exchange-sha1"
-	kexAlgoDHGEXSHA256 = "diffie-hellman-group-exchange-sha256"
+	KexAlgoDHGEXSHA1   = "diffie-hellman-group-exchange-sha1"
+	KexAlgoDHGEXSHA256 = "diffie-hellman-group-exchange-sha256"
 )
 
 // kexResult captures the outcome of a key exchange.
@@ -404,7 +404,7 @@ func init() {
 	// This is the group called diffie-hellman-group1-sha1 in
 	// RFC 4253 and Oakley Group 2 in RFC 2409.
 	p, _ := new(big.Int).SetString("FFFFFFFFFFFFFFFFC90FDAA22168C234C4C6628B80DC1CD129024E088A67CC74020BBEA63B139B22514A08798E3404DDEF9519B3CD3A431B302B0A6DF25F14374FE1356D6D51C245E485B576625E7EC6F44C42E9A637ED6B0BFF5CB6F406B7EDEE386BFB5A899FA5AE9F24117C4B1FE649286651ECE65381FFFFFFFFFFFFFFFF", 16)
-	kexAlgoMap[kexAlgoDH1SHA1] = &dhGroup{
+	kexAlgoMap[KexAlgoDH1SHA1] = &dhGroup{
 		g:        new(big.Int).SetInt64(2),
 		p:        p,
 		pMinus1:  new(big.Int).Sub(p, bigOne),
@@ -421,22 +421,22 @@ func init() {
 		pMinus1: new(big.Int).Sub(p, bigOne),
 	}
 
-	kexAlgoMap[kexAlgoDH14SHA1] = &dhGroup{
+	kexAlgoMap[KexAlgoDH14SHA1] = &dhGroup{
 		g: group14.g, p: group14.p, pMinus1: group14.pMinus1,
 		hashFunc: crypto.SHA1,
 	}
-	kexAlgoMap[kexAlgoDH14SHA256] = &dhGroup{
+	kexAlgoMap[KexAlgoDH14SHA256] = &dhGroup{
 		g: group14.g, p: group14.p, pMinus1: group14.pMinus1,
 		hashFunc: crypto.SHA256,
 	}
 
-	kexAlgoMap[kexAlgoECDH521] = &ecdh{elliptic.P521()}
-	kexAlgoMap[kexAlgoECDH384] = &ecdh{elliptic.P384()}
-	kexAlgoMap[kexAlgoECDH256] = &ecdh{elliptic.P256()}
-	kexAlgoMap[kexAlgoCurve25519SHA256] = &curve25519sha256{}
-	kexAlgoMap[kexAlgoCurve25519SHA256LibSSH] = &curve25519sha256{}
-	kexAlgoMap[kexAlgoDHGEXSHA1] = &dhGEXSHA{hashFunc: crypto.SHA1}
-	kexAlgoMap[kexAlgoDHGEXSHA256] = &dhGEXSHA{hashFunc: crypto.SHA256}
+	kexAlgoMap[KexAlgoECDH521] = &ecdh{elliptic.P521()}
+	kexAlgoMap[KexAlgoECDH384] = &ecdh{elliptic.P384()}
+	kexAlgoMap[KexAlgoECDH256] = &ecdh{elliptic.P256()}
+	kexAlgoMap[KexAlgoCurve25519SHA256] = &curve25519sha256{}
+	kexAlgoMap[KexAlgoCurve25519SHA256LibSSH] = &curve25519sha256{}
+	kexAlgoMap[KexAlgoDHGEXSHA1] = &dhGEXSHA{hashFunc: crypto.SHA1}
+	kexAlgoMap[KexAlgoDHGEXSHA256] = &dhGEXSHA{hashFunc: crypto.SHA256}
 }
 
 // curve25519sha256 implements the curve25519-sha256 (formerly known as
