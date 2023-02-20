@@ -178,6 +178,10 @@ func (m *mux) ackRequest(ok bool, data []byte) error {
 	return m.sendMessage(globalRequestFailureMsg{Data: data})
 }
 
+func (m *mux) Disconnect(reason DisconnectReason, message string) error {
+	return m.sendMessage(disconnectMsg{Reason: uint32(reason), Message: message})
+}
+
 func (m *mux) Close() error {
 	return m.conn.Close()
 }
