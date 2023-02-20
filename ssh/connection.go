@@ -95,6 +95,10 @@ type Conn interface {
 	// connection will hang.
 	OpenChannel(name string, data []byte) (Channel, <-chan *Request, error)
 
+	// Disconnect sends a message to explicitly close the connection.  After
+	// this has been called, no further messages can be sent.
+	Disconnect(reason DisconnectReason, message string) error
+
 	// Close closes the underlying network connection
 	Close() error
 
@@ -103,10 +107,6 @@ type Conn interface {
 	// explicit disconnect message from the other end, then Wait will return a
 	// DisconnectError.
 	Wait() error
-
-	// TODO(hanwen): consider exposing:
-	//   RequestKeyChange
-	//   Disconnect
 }
 
 // DiscardRequests consumes and rejects all requests from the
