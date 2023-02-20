@@ -548,7 +548,8 @@ userAuthLoop:
 			if err := s.transport.writePacket(Marshal(discMsg)); err != nil {
 				return nil, err
 			}
-			authErrs = append(authErrs, discMsg)
+			err := &DisconnectError{Reason: DisconnectReason(discMsg.Reason), Message: discMsg.Message}
+			authErrs = append(authErrs, err)
 			return nil, &ServerAuthError{Errors: authErrs}
 		}
 
