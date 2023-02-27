@@ -202,12 +202,20 @@ type channelOpenMsg struct {
 	TypeSpecificData []byte `ssh:"rest"`
 }
 
-const msgChannelExtendedData = 95
 const msgChannelData = 94
 
 // Used for debug print outs of packets.
 type channelDataMsg struct {
 	PeersID uint32 `sshtype:"94"`
+	Length  uint32
+	Rest    []byte `ssh:"rest"`
+}
+
+const msgChannelExtendedData = 95
+
+type channelExtendedDataMsg struct {
+	PeersID uint32 `sshtype:"95"`
+	Type    uint32
 	Length  uint32
 	Rest    []byte `ssh:"rest"`
 }
@@ -812,6 +820,8 @@ func decode(packet []byte) (interface{}, error) {
 		msg = new(channelOpenMsg)
 	case msgChannelData:
 		msg = new(channelDataMsg)
+	case msgChannelExtendedData:
+		msg = new(channelExtendedDataMsg)
 	case msgChannelOpenConfirm:
 		msg = new(channelOpenConfirmMsg)
 	case msgChannelOpenFailure:
@@ -862,6 +872,7 @@ var packetTypeNames = map[byte]string{
 	msgRequestFailure:      "globalRequestFailureMsg",
 	msgChannelOpen:         "channelOpenMsg",
 	msgChannelData:         "channelDataMsg",
+	msgChannelExtendedData: "channelExtendedDataMsg",
 	msgChannelOpenConfirm:  "channelOpenConfirmMsg",
 	msgChannelOpenFailure:  "channelOpenFailureMsg",
 	msgChannelWindowAdjust: "windowAdjustMsg",
