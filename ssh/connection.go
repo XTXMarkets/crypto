@@ -84,11 +84,11 @@ type RawConn interface {
 	ConnMetadata
 
 	// SendMessage sends a single RFC 4254 connection level message.
-	SendMessage(msg interface{}) error
+	SendMessage(msg Message) error
 
 	// ReceiveMessage blocks until it can return a single connection level
 	// message.
-	ReceiveMessage() (interface{}, error)
+	ReceiveMessage() (Message, error)
 
 	// Disconnect sends a message to explicitly close the connection.  After
 	// this has been called, no further messages can be sent.
@@ -97,6 +97,40 @@ type RawConn interface {
 	// Close closes the underlying network connection.
 	Close() error
 }
+
+type GlobalRequestMsg = globalRequestMsg
+type GlobalRequestSuccessMsg = globalRequestSuccessMsg
+type GlobalRequestFailureMsg = globalRequestFailureMsg
+type ChannelOpenMsg = channelOpenMsg
+type ChannelOpenConfirmMsg = channelOpenConfirmMsg
+type ChannelOpenFailureMsg = channelOpenFailureMsg
+type ChannelDataMsg = channelDataMsg
+type ChannelExtendedDataMsg = channelExtendedDataMsg
+type ChannelWindowAdjustMsg = windowAdjustMsg
+type ChannelEOFMsg = channelEOFMsg
+type ChannelRequestMsg = channelRequestMsg
+type ChannelRequestSuccessMsg = channelRequestSuccessMsg
+type ChannelRequestFailureMsg = channelRequestFailureMsg
+type ChannelCloseMsg = channelCloseMsg
+
+type Message interface {
+	isMessageMarker()
+}
+
+func (_ *GlobalRequestMsg) isMessageMarker()         {}
+func (_ *GlobalRequestSuccessMsg) isMessageMarker()  {}
+func (_ *GlobalRequestFailureMsg) isMessageMarker()  {}
+func (_ *ChannelOpenMsg) isMessageMarker()           {}
+func (_ *ChannelOpenConfirmMsg) isMessageMarker()    {}
+func (_ *ChannelOpenFailureMsg) isMessageMarker()    {}
+func (_ *ChannelDataMsg) isMessageMarker()           {}
+func (_ *ChannelExtendedDataMsg) isMessageMarker()   {}
+func (_ *ChannelWindowAdjustMsg) isMessageMarker()   {}
+func (_ *ChannelEOFMsg) isMessageMarker()            {}
+func (_ *ChannelRequestMsg) isMessageMarker()        {}
+func (_ *ChannelRequestSuccessMsg) isMessageMarker() {}
+func (_ *ChannelRequestFailureMsg) isMessageMarker() {}
+func (_ *ChannelCloseMsg) isMessageMarker()          {}
 
 // Conn represents an SSH connection for both server and client roles.
 // Conn is the basis for implementing an application layer, such
@@ -157,17 +191,26 @@ type connection struct {
 	*mux
 }
 
-func (c *connection) SendMessage(msg interface{}) error {
+func (c *connection) SendMessage(msg Message) error {
 	packet := Marshal(msg)
 	return c.transport.writePacket(packet)
 }
 
-func (c *connection) ReceiveMessage() (interface{}, error) {
+func (c *connection) ReceiveMessage() (Message, error) {
 	packet, err := c.transport.readPacket()
 	if err != nil {
 		return nil, err
 	}
-	return decode(packet)
+	msg, err := decode(packet)
+	if err != nil {
+		return nil, err
+	}
+
+	if msg, ok := msg.(Message); !ok {
+		return nil, fmt.Errorf("Not a valid connection message: %T", msg)
+	} else {
+		return msg, nil
+	}
 }
 
 func (c *connection) Disconnect(reason DisconnectReason, message string) error {
