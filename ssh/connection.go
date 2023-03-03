@@ -76,6 +76,28 @@ type ConnMetadata interface {
 	LocalAddr() net.Addr
 }
 
+// RawConn is a low level interface for sending and receiving packets over an
+// authenticated SSH connection.  It represents a connection as described in RFC
+// 4254.  Most users are likely to want to use the higher level Conn interface,
+// which provides help with managing channels and responding to requests.
+type RawConn interface {
+	ConnMetadata
+
+	// SendMessage sends a single RFC 4254 connection level message.
+	SendMessage(msg interface{}) error
+
+	// ReceiveMessage blocks until it can return a single connection level
+	// message.
+	ReceiveMessage() (interface{}, error)
+
+	// Disconnect sends a message to explicitly close the connection.  After
+	// this has been called, no further messages can be sent.
+	Disconnect(reason DisconnectReason, message string) error
+
+	// Close closes the underlying network connection.
+	Close() error
+}
+
 // Conn represents an SSH connection for both server and client roles.
 // Conn is the basis for implementing an application layer, such
 // as ClientConn, which implements the traditional shell access for
@@ -126,6 +148,24 @@ type connection struct {
 
 	// The connection protocol.
 	*mux
+}
+
+func (c *connection) SendMessage(msg interface{}) error {
+	packet := Marshal(msg)
+	return c.transport.writePacket(packet)
+}
+
+func (c *connection) ReceiveMessage() (interface{}, error) {
+	packet, err := c.transport.readPacket()
+	if err != nil {
+		return nil, err
+	}
+	return decode(packet)
+}
+
+func (c *connection) Disconnect(reason DisconnectReason, message string) error {
+	packet := Marshal(&disconnectMsg{Reason: uint32(reason), Message: message})
+	return c.transport.writePacket(packet)
 }
 
 func (c *connection) Close() error {
