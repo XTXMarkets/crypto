@@ -65,15 +65,28 @@ func NewClient(c Conn, chans <-chan NewChannel, reqs <-chan *Request) *Client {
 	return conn
 }
 
+func NewRawClientConn(c net.Conn, addr string, config *ClientConfig) (RawConn, error) {
+	return newClientConnection(c, addr, config)
+}
+
 // NewClientConn establishes an authenticated SSH connection using c
 // as the underlying transport.  The Request and NewChannel channels
 // must be serviced or the connection will hang.
 func NewClientConn(c net.Conn, addr string, config *ClientConfig) (Conn, <-chan NewChannel, <-chan *Request, error) {
+	conn, err := newClientConnection(c, addr, config)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	conn.mux = newMux(conn.transport)
+	return conn, conn.mux.incomingChannels, conn.mux.incomingRequests, nil
+}
+
+func newClientConnection(c net.Conn, addr string, config *ClientConfig) (*connection, error) {
 	fullConf := *config
 	fullConf.SetDefaults()
 	if fullConf.HostKeyCallback == nil {
 		c.Close()
-		return nil, nil, nil, errors.New("ssh: must specify HostKeyCallback")
+		return nil, errors.New("ssh: must specify HostKeyCallback")
 	}
 
 	conn := &connection{
@@ -82,10 +95,9 @@ func NewClientConn(c net.Conn, addr string, config *ClientConfig) (Conn, <-chan 
 
 	if err := conn.clientHandshake(addr, &fullConf); err != nil {
 		c.Close()
-		return nil, nil, nil, fmt.Errorf("ssh: handshake failed: %w", err)
+		return nil, fmt.Errorf("ssh: handshake failed: %w", err)
 	}
-	conn.mux = newMux(conn.transport)
-	return conn, conn.mux.incomingChannels, conn.mux.incomingRequests, nil
+	return conn, nil
 }
 
 // clientHandshake performs the client side key exchange. See RFC 4253 Section
