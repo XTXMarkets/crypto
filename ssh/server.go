@@ -194,6 +194,10 @@ type ServerConn struct {
 	Permissions *Permissions
 }
 
+func NewRawServerConn(c net.Conn, config *ServerConfig) (RawConn, *Permissions, error) {
+	return newServerConnection(c, config)
+}
+
 // NewServerConn starts a new SSH server with c as the underlying
 // transport.  It starts with a handshake and, if the handshake is
 // unsuccessful, it closes the connection and returns an error.  The
@@ -203,6 +207,15 @@ type ServerConn struct {
 // The returned error may be of type *ServerAuthError for
 // authentication errors.
 func NewServerConn(c net.Conn, config *ServerConfig) (*ServerConn, <-chan NewChannel, <-chan *Request, error) {
+	s, perms, err := newServerConnection(c, config)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	s.mux = newMux(s.transport)
+	return &ServerConn{s, perms}, s.mux.incomingChannels, s.mux.incomingRequests, nil
+}
+
+func newServerConnection(c net.Conn, config *ServerConfig) (*connection, *Permissions, error) {
 	fullConf := *config
 	fullConf.SetDefaults()
 	if fullConf.MaxAuthTries == 0 {
@@ -214,7 +227,7 @@ func NewServerConn(c net.Conn, config *ServerConfig) (*ServerConn, <-chan NewCha
 		for _, algo := range fullConf.PublicKeyAuthAlgorithms {
 			if !contains(supportedPubKeyAuthAlgos, algo) {
 				c.Close()
-				return nil, nil, nil, fmt.Errorf("ssh: unsupported public key authentication algorithm %s", algo)
+				return nil, nil, fmt.Errorf("ssh: unsupported public key authentication algorithm %s", algo)
 			}
 		}
 	}
@@ -222,7 +235,7 @@ func NewServerConn(c net.Conn, config *ServerConfig) (*ServerConn, <-chan NewCha
 	for _, kex := range fullConf.KeyExchanges {
 		if _, ok := serverForbiddenKexAlgos[kex]; ok {
 			c.Close()
-			return nil, nil, nil, fmt.Errorf("ssh: unsupported key exchange %s for server", kex)
+			return nil, nil, fmt.Errorf("ssh: unsupported key exchange %s for server", kex)
 		}
 	}
 
@@ -232,9 +245,9 @@ func NewServerConn(c net.Conn, config *ServerConfig) (*ServerConn, <-chan NewCha
 	perms, err := s.serverHandshake(&fullConf)
 	if err != nil {
 		c.Close()
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
-	return &ServerConn{s, perms}, s.mux.incomingChannels, s.mux.incomingRequests, nil
+	return s, perms, nil
 }
 
 // signAndMarshal signs the data with the appropriate algorithm,
@@ -305,7 +318,6 @@ func (s *connection) serverHandshake(config *ServerConfig) (*Permissions, error)
 	if err != nil {
 		return nil, err
 	}
-	s.mux = newMux(s.transport)
 	return perms, err
 }
 
