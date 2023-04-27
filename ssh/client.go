@@ -95,7 +95,7 @@ func newClientConnection(c net.Conn, addr string, config *ClientConfig) (*connec
 
 	if err := conn.clientHandshake(addr, &fullConf); err != nil {
 		c.Close()
-		return nil, fmt.Errorf("ssh: handshake failed: %v", err)
+		return nil, fmt.Errorf("ssh: handshake failed: %w", err)
 	}
 	return conn, nil
 }
