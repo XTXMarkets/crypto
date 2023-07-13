@@ -860,6 +860,9 @@ userAuthLoop:
 			}
 		}
 
+		if config.NoClientAuthCallback != nil {
+			failureMsg.Methods = append(failureMsg.Methods, "none")
+		}
 		if authConfig.PasswordCallback != nil {
 			failureMsg.Methods = append(failureMsg.Methods, "password")
 		}
