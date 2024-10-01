@@ -287,6 +287,9 @@ type Config struct {
 	// The allowed MAC algorithms. If unspecified then a sensible default is
 	// used. Unsupported values are silently ignored.
 	MACs []string
+
+	// Control whether the ping extension is advertised to clients.
+	DisablePingExtension bool
 }
 
 // SetDefaults sets sensible values for unset fields in config. This is
