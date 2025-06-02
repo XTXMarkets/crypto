@@ -30,7 +30,7 @@ func init() {
 		return
 	}
 	supportedKexAlgos = slices.Insert(supportedKexAlgos, 0, kexAlgoMLKEM768xCurve25519SHA256)
-	preferredKexAlgos = slices.Insert(preferredKexAlgos, 0, kexAlgoMLKEM768xCurve25519SHA256)
+	PreferredKexAlgos = slices.Insert(PreferredKexAlgos, 0, kexAlgoMLKEM768xCurve25519SHA256)
 	kexAlgoMap[kexAlgoMLKEM768xCurve25519SHA256] = &mlkem768WithCurve25519sha256{}
 }
 
